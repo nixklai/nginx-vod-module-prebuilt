@@ -31,7 +31,7 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE
         wget https://nginx.org/download/nginx-${{ matrix.nginx_version }}.tar.gz
-        tar -xzvf nginx-${{ matrix.os }}.tar.gz
+        tar -xzvf nginx-${{ matrix.nginx_version }}.tar.gz
 
     # Runs a single command using the runners shell
     - name: Install dependencies
@@ -39,7 +39,7 @@ jobs:
 
     - name: Compile dynamic module
       run: |
-        cd $GITHUB_WORKSPACE/nginx-${{ matrix.os }}
+        cd $GITHUB_WORKSPACE/nginx-${{ matrix.nginx_version }}
         ./configure --with-compat --add-dynamic-module=$GITHUB_WORKSPACE/nginx-vod-module
         make modules
 
