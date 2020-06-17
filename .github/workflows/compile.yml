@@ -30,7 +30,7 @@ jobs:
     - name: Configure compilation setting
       run: |
         cd $GITHUB_WORKSPACE
-        wget https://nginx.org/download/nginx-${{ matrix.os }}.tar.gz
+        wget https://nginx.org/download/nginx-${{ matrix.nginx_version }}.tar.gz
         tar -xzvf nginx-${{ matrix.os }}.tar.gz
 
     # Runs a single command using the runners shell
