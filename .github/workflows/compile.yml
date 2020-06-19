@@ -12,10 +12,9 @@ jobs:
     name: Compile on ${{ matrix.os }} for nginx ${{ matrix.nginx_version }}
     runs-on: ${{ matrix.os }}
     env:
-      ffmpeg_version: 4.2.3
+      module_version: 1.26
       pcre_version: 8.44
       zlib_version: 1.2.11
-      module_version: 1.26
     strategy:
       matrix:
         nginx_version: ['1.18.0', '1.19.0']
@@ -86,36 +85,14 @@ jobs:
     # Grab prebuilts from apt
     - name: Install dependencies with apt
       run: |
+        sudo add-apt-repository universe
         sudo apt-get update
         sudo apt-get -y --fix-missing install \
-        gcc make yasm pkg-config libxml2-dev \
-        autoconf \
-        automake \
-        build-essential \
-        cmake \
-        libass-dev \
-        libfreetype6-dev \
-        libgnutls28-dev \
-        libsdl2-dev \
-        libtool \
-        libva-dev \
-        libvdpau-dev \
-        libvorbis-dev \
-        libxcb1-dev \
-        libxcb-shm0-dev \
-        libxcb-xfixes0-dev \
-        pkg-config \
-        texinfo \
-        wget \
-        yasm \
-        zlib1g-dev \
-        nasm \
-        libopus-dev \
-        libmp3lame-dev \
-        libfdk-aac-dev \
-        libvpx-dev \
-        libnuma-dev \
-        ffmpeg
+        gcc make build-essential \
+        libxml2-dev \
+        libavcodec-dev \
+        libswscale-dev \
+        libavfilter-dev
 
     - name: Configure environment
       run: |
