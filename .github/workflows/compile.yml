@@ -27,25 +27,25 @@ jobs:
         submodules: true
 
     - name: Install dependencies with apt
-      run: sudo apt-get install yasm gcc make -y
+      run: sudo apt-get install gcc make yasm libav-tools libavcodec-extra -y
 
     # Compile ffmpeg (since it is required for libavcodec and libavfilter)
-    - name: Compile ffmpeg
-      run: |
-        cd $GITHUB_WORKSPACE
-        wget https://ffmpeg.org/releases/ffmpeg-4.2.3.tar.gz
-        tar -xzvf ffmpeg-4.2.3.tar.gz
-        cd $GITHUB_WORKSPACE/ffmpeg-4.2.3
-        ./configure \
-        --enable-shared \
-        --enable-gpl \
-        --enable-nonfree \
-        --extra-cflags='-g -O2 -fstack-protector-strong -Wformat -Werror=format-security ' \
-        --extra-ldflags='-Wl,-z,relro'
-        make
-        export LD_LIBRARY_PATH=/usr/local/lib
-        export LIBRARY_PATH=/usr/local/lib
-        export C_INCLUDE_PATH=/usr/local/include
+    # - name: Compile ffmpeg
+    #   run: |
+    #     cd $GITHUB_WORKSPACE
+    #     wget https://ffmpeg.org/releases/ffmpeg-4.2.3.tar.gz
+    #     tar -xzvf ffmpeg-4.2.3.tar.gz
+    #     cd $GITHUB_WORKSPACE/ffmpeg-4.2.3
+    #     ./configure \
+    #     --enable-shared \
+    #     --enable-gpl \
+    #     --enable-nonfree \
+    #     --extra-cflags='-g -O2 -fstack-protector-strong -Wformat -Werror=format-security ' \
+    #     --extra-ldflags='-Wl,-z,relro'
+    #     make
+    #     export LD_LIBRARY_PATH=/usr/local/lib
+    #     export LIBRARY_PATH=/usr/local/lib
+    #     export C_INCLUDE_PATH=/usr/local/include
 
     # Runs a set of commands using the runners shell
     - name: Download nginx ${{ matrix.nginx_version }}
