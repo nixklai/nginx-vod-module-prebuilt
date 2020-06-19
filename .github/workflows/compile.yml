@@ -15,9 +15,10 @@ jobs:
       module_version: 1.26
       pcre_version: 8.44
       zlib_version: 1.2.11
+      openssl_version: 1.1.1g
     strategy:
       matrix:
-        nginx_version: ['1.18.0', '1.19.0']
+        nginx_version: ['1.14.0', '1.18.0', '1.19.0']
         # The type of runner that the job will run on
         os: [ubuntu-18.04, ubuntu-16.04]
    
@@ -29,8 +30,7 @@ jobs:
       id: cache-nginx
       with:
         path: nginx-${{ matrix.nginx_version }}
-        key: nginx-${{ matrix.nginx_version }}
-    
+        key: nginx-${{ matrix.nginx_version }}    
     - name: Download nginx
       if: steps.cache-nginx.outputs.cache-hit != 'true'
       run: |
@@ -44,8 +44,7 @@ jobs:
       id: cache-nginx-vod-module
       with:
         path: nginx-vod-module-${{ env.module_version }}
-        key: nginx-vod-module-${{ env.module_version }}
-    
+        key: nginx-vod-module-${{ env.module_version }}   
     - name: Download nginx-vod-module
       if: steps.cache-nginx-vod-module.outputs.cache-hit != 'true'
       run: |
@@ -60,36 +59,39 @@ jobs:
       with:
         path: pcre-${{ env.pcre_version }}
         key: pcre-${{ env.pcre_version }}
-    
     - name: Download pcre
       if: steps.cache-pcre.outputs.cache-hit != 'true'
       run: |
         cd ${{ github.workspace }}
         wget https://ftp.pcre.org/pub/pcre/pcre-${{ env.pcre_version }}.tar.gz
         tar -xzvf pcre-${{ env.pcre_version }}.tar.gz
-        
-    - name: Grab zlib-${{ env.zlib_version }} cache
+
+    # Grab openssl module   
+    - name: Grab openssl-${{ env.openssl_version }} cache
       uses: actions/cache@v2
-      id: cache-zlib
+      id: cache-openssl
       with:
-        path: zlib-${{ env.zlib_version }}
-        key: zlib-${{ env.zlib_version }}
-  
-    - name: Download zlib
-      if: steps.cache-zlib.outputs.cache-hit != 'true'
+        path: openssl-${{ env.openssl_version }}
+        key: openssl-${{ env.openssl_version }}
+    - name: Download openssl
+      if: steps.cache-openssl.outputs.cache-hit != 'true'
       run: |
         cd ${{ github.workspace }}
-        wget https://www.zlib.net/zlib-${{ env.zlib_version }}.tar.gz
-        tar -xzvf zlib-${{ env.zlib_version }}.tar.gz
-        
+        wget https://www.openssl.org/source/openssl-${{ env.openssl_version }}.tar.gz
+        tar -xzvf openssl-${{ env.openssl_version }}.tar.gz
+
     # Grab prebuilts from apt
     - name: Install dependencies with apt
       run: |
         sudo add-apt-repository universe
         sudo apt-get update
-        sudo apt-get -y --fix-missing install \
+        sudo apt-get -y \
+        --fix-missing install \
         gcc make build-essential \
         libxml2-dev \
+        libxslt-dev \
+        libgd-dev \
+        libgeoip-dev \
         libavcodec-dev \
         libswscale-dev \
         libavfilter-dev
@@ -100,12 +102,53 @@ jobs:
         export LIBRARY_PATH=/usr/local/lib
         export C_INCLUDE_PATH=/usr/local/include
 
-    - name: Compile dynamic module
+    - name: Configure compilation of dynamic module
       run: |
         cd ${{ github.workspace }}/nginx-${{ matrix.nginx_version }}
-        ./configure --with-compat --add-dynamic-module=${{ github.workspace }}/nginx-vod-module-${{ env.module_version }}/ \
+        ./configure \
+        --with-compat \
+        --add-dynamic-module=${{ github.workspace }}/nginx-vod-module-${{ env.module_version }}/ \
+        --with-cc-opt='-g -O2 -fdebug-prefix-map=/build/nginx-GkiujU/nginx-1.14.0=. -fstack-protector-strong -Wformat -Werror=format-security -fPIC -Wdate-time -D_FORTIFY_SOURCE=2' \
+        --with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now -fPIC' \
+        --prefix=/usr/share/nginx \
+        --conf-path=/etc/nginx/nginx.conf \
+        --http-log-path=/var/log/nginx/access.log \
+        --error-log-path=/var/log/nginx/error.log \
+        --lock-path=/var/lock/nginx.lock \
+        --pid-path=/run/nginx.pid \
+        --modules-path=/usr/lib/nginx/modules \
+        --http-client-body-temp-path=/var/lib/nginx/body \
+        --http-fastcgi-temp-path=/var/lib/nginx/fastcgi \
+        --http-proxy-temp-path=/var/lib/nginx/proxy \
+        --http-scgi-temp-path=/var/lib/nginx/scgi \
+        --http-uwsgi-temp-path=/var/lib/nginx/uwsgi \
+        --with-debug \
+        --with-pcre-jit \
+        --with-http_ssl_module \
+        --with-http_stub_status_module \
+        --with-http_realip_module \
+        --with-http_auth_request_module \
+        --with-http_v2_module \
+        --with-http_dav_module \
+        --with-http_slice_module \
+        --with-threads \
+        --with-http_addition_module \
+        --with-http_geoip_module=dynamic \
+        --with-http_gunzip_module \
+        --with-http_gzip_static_module \
+        --with-http_image_filter_module=dynamic \
+        --with-http_sub_module \
+        --with-http_xslt_module=dynamic \
+        --with-stream=dynamic \
+        --with-stream_ssl_module \
+        --with-mail=dynamic \
+        --with-mail_ssl_module \
         --with-pcre=${{ github.workspace }}/pcre-${{ env.pcre_version }} \
-        --with-zlib=${{ github.workspace }}/zlib-${{ env.zlib_version }}
+        --with-zlib=${{ github.workspace }}/zlib-${{ env.zlib_version }} \
+        --with-openssl=${{ github.workspace }}/openssl-${{ env.openssl_version }}
+    - name: Compile dynamic module  
+      run: |  
+        cd ${{ github.workspace }}/nginx-${{ matrix.nginx_version }}
         make modules
         ls -l ${{ github.workspace }}/nginx-${{ matrix.nginx_version }}/objs
 
