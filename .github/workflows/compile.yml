@@ -24,21 +24,6 @@ jobs:
    
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Grab ffmpeg source, from cache if possible, or from web
-    - name: Grab ffmpeg-${{ env.ffmpeg_version }} cache
-      uses: actions/cache@v2
-      id: cache-ffmpeg
-      with:
-        path: ffmpeg-${{ env.ffmpeg_version }}
-        key: ffmpeg-${{ env.ffmpeg_version }}
-
-    - name: Download ffmpeg
-      if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
-      run: |
-        cd ${{ github.workspace }}
-        wget https://ffmpeg.org/releases/ffmpeg-${{ env.ffmpeg_version }}.tar.gz
-        tar -xzvf ffmpeg-${{ env.ffmpeg_version }}.tar.gz
-
     # Grab nginx source, from cache if possible, or from web
     - name: Grab nginx-${{ matrix.nginx_version }} cache
       uses: actions/cache@v2
@@ -129,45 +114,14 @@ jobs:
         libmp3lame-dev \
         libfdk-aac-dev \
         libvpx-dev \
-        libnuma-dev
+        libnuma-dev \
+        ffmpeg
 
-    # Grab pcre module
-    - name: Grab ffmpeg-${{ env.ffmpeg_version }} prebuilt cache
-      uses: actions/cache@v2
-      id: cache-ffmpeg-built
-      with:
-        path: ffmpeg-build-${{ env.ffmpeg_version }}
-        key: ffmpeg-build-${{ env.ffmpeg_version }}
-
-    # Compile ffmpeg (since it is required for libavcodec and libavfilter)
-    - name: Configure ffmpeg-${{ env.ffmpeg_version }} compilation
-      if: steps.cache-ffmpeg-built.outputs.cache-hit != 'true'
+    - name: Configure environment
       run: |
-        cd ${{ github.workspace }}/ffmpeg-${{ env.ffmpeg_version }}
-        ./configure \
-        --enable-shared \
-        --enable-gpl \
-        --enable-nonfree \
-        --extra-cflags='-g -O2 -fstack-protector-strong -Wformat -Werror=format-security ' \
-        --extra-ldflags='-Wl,-z,relro' \
-        --incdir=${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/inc \
-        --libdir=${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/lib \
-        --bindir=${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/bin \
-        --target-path=${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/target
-    
-    - name: Build ffmpeg-${{ env.ffmpeg_version }} prebuilt
-      run: |
-        cd ${{ github.workspace }}/ffmpeg-${{ env.ffmpeg_version }}
-        make
         export LD_LIBRARY_PATH=/usr/local/lib
         export LIBRARY_PATH=/usr/local/lib
         export C_INCLUDE_PATH=/usr/local/include
-
-    - name: clone ffmpeg library
-      run: |
-        sudo cp ${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/inc/. /usr/local/include
-        sudo cp ${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/lib/. /usr/local/lib
-        sudo cp ${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/bin/. /usr/local/bin
 
     - name: Compile dynamic module
       run: |
