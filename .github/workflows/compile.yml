@@ -103,7 +103,8 @@ jobs:
     # Grab prebuilts from apt
     - name: Install dependencies with apt
       run: |
-        sudo apt-get -y install \
+        sudo apt-get update
+        sudo apt-get -y --fix-missing install \
         gcc make yasm pkg-config libxml2-dev \
         autoconf \
         automake \
