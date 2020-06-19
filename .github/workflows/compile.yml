@@ -20,7 +20,7 @@ jobs:
       matrix:
         nginx_version: ['1.18.0', '1.19.0']
         # The type of runner that the job will run on
-        os: [ubuntu-latest, ubuntu-16.04]
+        os: [ubuntu-18.04git, ubuntu-16.04]
    
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -167,9 +167,9 @@ jobs:
 
     - name: clone ffmpeg library
       run: |
-        sudo cp ${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/inc/* /usr/local/include
-        sudo cp ${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/lib/* /usr/local/lib
-        sudo cp ${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/bin/* /usr/local/bin
+        sudo cp ${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/inc/. /usr/local/include
+        sudo cp ${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/lib/. /usr/local/lib
+        sudo cp ${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/bin/. /usr/local/bin
 
     - name: Compile dynamic module
       run: |
