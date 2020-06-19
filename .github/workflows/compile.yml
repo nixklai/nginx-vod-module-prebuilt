@@ -154,12 +154,17 @@ jobs:
         --incdir=${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/inc \
         --libdir=${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/lib \
         --bindir=${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/bin \
-        --shlibdir=${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/shlib \
-        --target-path=${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/bin \
+        --target-path=${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/target \
         make
         export LD_LIBRARY_PATH=/usr/local/lib
         export LIBRARY_PATH=/usr/local/lib
         export C_INCLUDE_PATH=/usr/local/include
+
+    - name: clone ffmpeg library
+      run: |
+        sudo cp ${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/inc/* /usr/local/include
+        sudo cp ${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/lib/* /usr/local/lib
+        sudo cp ${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/bin/* /usr/local/bin
 
     - name: Compile dynamic module
       run: |
