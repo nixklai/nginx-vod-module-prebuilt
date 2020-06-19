@@ -27,18 +27,11 @@ jobs:
         submodules: true
 
     # Compile ffmpeg (since it is required for libavcodec and libavfilter)
-    - name: Compile ffmpeg
+    - name: Download kaltura-ffmpeg
       run: |
-        cd $GITHUB_WORKSPACE
-        wget https://ffmpeg.org/releases/ffmpeg-4.2.3.tar.gz
-        tar -xzvf ffmpeg-4.2.3.tar.gz
-        cd $GITHUB_WORKSPACE/ffmpeg-4.2.3
-        ./configure \
-        --enable-shared \
-        --enable-gpl \
-        --enable-nonfree \
-        --extra-cflags='-g -O2 -fstack-protector-strong -Wformat -Werror=format-security ' \
-        --extra-ldflags='-Wl,-z,relro'
+        sudo echo "deb [arch=amd64] http://installrepo.kaltura.org/repo/apt/xenial naos main" > /etc/apt/sources.list.d/kaltura.list
+        sudo apt update
+        sudo apt-get install kaltura-ffmpeg
 
     # Runs a set of commands using the runners shell
     - name: Download nginx ${{ matrix.nginx_version }}
