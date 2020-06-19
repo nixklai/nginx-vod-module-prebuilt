@@ -16,7 +16,6 @@ jobs:
       pcre_version: 8.44
       zlib_version: 1.2.11
       module_version: 1.26
-
     strategy:
       matrix:
         nginx_version: ['1.18.0', '1.19.0']
@@ -30,8 +29,8 @@ jobs:
     - name: Download ffmpeg
       run: |
         cd $GITHUB_WORKSPACE
-        wget https://ffmpeg.org/releases/ffmpeg-${{ $env:ffmpeg_version }}.tar.gz
-        tar -xzvf ffmpeg-${{ $env:ffmpeg_version }}.tar.gz
+        wget https://ffmpeg.org/releases/ffmpeg-$ffmpeg_version.tar.gz
+        tar -xzvf ffmpeg-$ffmpeg_version.tar.gz
 
     - name: Download nginx
       run: |
@@ -42,20 +41,20 @@ jobs:
     - name: Download nginx-vod-module
       run: |
         cd $GITHUB_WORKSPACE
-        wget https://github.com/kaltura/nginx-vod-module/archive/${{ $env:module_version }}.tar.gz
-        tar -xzvf ${{ $env:module_version }}.tar.gz
+        wget https://github.com/kaltura/nginx-vod-module/archive/$module_version.tar.gz
+        tar -xzvf $module_version.tar.gz
       
     - name: Download pcre
       run: |
         cd $GITHUB_WORKSPACE
-        wget https://ftp.pcre.org/pub/pcre/pcre-${{ $env:pcre_version }}.tar.gz
-        tar -xzvf pcre-${{ $env:pcre_version }}.tar.gz
+        wget https://ftp.pcre.org/pub/pcre/pcre-$pcre_version.tar.gz
+        tar -xzvf pcre-$pcre_version.tar.gz
         
     - name: Download zlib
       run: |
         cd $GITHUB_WORKSPACE
-        wget https://www.zlib.net/zlib-${{ $env:zlib_version }}.tar.gz
-        tar -xzvf zlib-${{ $env:zlib_version }}.tar.gz
+        wget https://www.zlib.net/zlib-$zlib_version.tar.gz
+        tar -xzvf zlib-$zlib_version.tar.gz
         
     # Grab prebuilts from apt
     - name: Install dependencies with apt
@@ -64,7 +63,7 @@ jobs:
     # Compile ffmpeg (since it is required for libavcodec and libavfilter)
     - name: Compile ffmpeg
       run: |
-        cd $GITHUB_WORKSPACE/ffmpeg-${{ $env:ffmpeg_version }}
+        cd $GITHUB_WORKSPACE/ffmpeg-$ffmpeg_version
         ./configure \
         --enable-shared \
         --enable-gpl \
@@ -79,9 +78,9 @@ jobs:
     - name: Compile dynamic module
       run: |
         cd $GITHUB_WORKSPACE/nginx-${{ matrix.nginx_version }}
-        ./configure --with-compat --add-dynamic-module=$GITHUB_WORKSPACE/nginx-vod-module-${{ $env:module_version }}/ \
-        --with-pcre=$GITHUB_WORKSPACE/pcre-${{ $env:pcre_version}} \
-        --with-zlib=$GITHUB_WORKSPACE/zlib-${{ $env:zlib_version }}
+        ./configure --with-compat --add-dynamic-module=$GITHUB_WORKSPACE/nginx-vod-module-$module_version/ \
+        --with-pcre=$GITHUB_WORKSPACE/pcre-$pcre_version \
+        --with-zlib=$GITHUB_WORKSPACE/zlib-$zlib_version
         make modules
         ls -l $GITHUB_WORKSPACE/nginx-${{ matrix.nginx_version }}/objs
 
