@@ -27,7 +27,7 @@ jobs:
         submodules: true
 
     - name: Install dependencies with apt
-      run: sudo apt-get install gcc make yasm libav-tools libavcodec-extra -y
+      run: sudo apt-get install gcc make yasm ffmpeg libavcodec-extra -y
 
     # Compile ffmpeg (since it is required for libavcodec and libavfilter)
     # - name: Compile ffmpeg
