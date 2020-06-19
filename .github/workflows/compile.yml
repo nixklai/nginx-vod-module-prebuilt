@@ -20,44 +20,67 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - name: Checkout repository
-      uses: actions/checkout@v2
-      with:
-        submodules: true
+    # Grab comilation sources
+    - name: Download ffmpeg
+      run: |
+        cd $GITHUB_WORKSPACE
+        wget https://ffmpeg.org/releases/ffmpeg-4.2.3.tar.gz
+        tar -xzvf ffmpeg-4.2.3.tar.gz
+        rm ffmpeg-4.2.3.tar.gz
 
-    - name: Install dependencies with apt
-      run: sudo apt-get install gcc make yasm ffmpeg libavcodec-extra -y
-
-    # Compile ffmpeg (since it is required for libavcodec and libavfilter)
-    # - name: Compile ffmpeg
-    #   run: |
-    #     cd $GITHUB_WORKSPACE
-    #     wget https://ffmpeg.org/releases/ffmpeg-4.2.3.tar.gz
-    #     tar -xzvf ffmpeg-4.2.3.tar.gz
-    #     cd $GITHUB_WORKSPACE/ffmpeg-4.2.3
-    #     ./configure \
-    #     --enable-shared \
-    #     --enable-gpl \
-    #     --enable-nonfree \
-    #     --extra-cflags='-g -O2 -fstack-protector-strong -Wformat -Werror=format-security ' \
-    #     --extra-ldflags='-Wl,-z,relro'
-    #     make
-    #     export LD_LIBRARY_PATH=/usr/local/lib
-    #     export LIBRARY_PATH=/usr/local/lib
-    #     export C_INCLUDE_PATH=/usr/local/include
-
-    # Runs a set of commands using the runners shell
-    - name: Download nginx ${{ matrix.nginx_version }}
+    - name: Download nginx
       run: |
         cd $GITHUB_WORKSPACE
         wget https://nginx.org/download/nginx-${{ matrix.nginx_version }}.tar.gz
         tar -xzvf nginx-${{ matrix.nginx_version }}.tar.gz
+        rm nginx-${{ matrix.nginx_version }}.tar.gz
+
+    - name: Download nginx-vod-module
+      run: |
+        cd $GITHUB_WORKSPACE
+        wget https://github.com/kaltura/nginx-vod-module/archive/1.26.tar.gz
+        tar -xzvf 1.26.tar.gz
+        rm 1.26.tar.gz
+      
+    - name: Download pcre
+      run: |
+        cd $GITHUB_WORKSPACE
+        wget https://ftp.pcre.org/pub/pcre/pcre-8.44.tar.gz
+        tar -xzvf pcre-8.44.tar.gz
+        rm pcre-8.44.tar.gz
+        
+    - name: Download zlib
+      run: |
+        cd $GITHUB_WORKSPACE
+        wget https://www.zlib.net/zlib-1.2.11.tar.gz
+        tar -xzvf zlib-1.2.11.tar.gz
+        rm zlib-1.2.11.tar.gz
+        
+    # Grab prebuilts from apt
+    - name: Install dependencies with apt
+      run: sudo apt-get install gcc make yasm pkg-config libxml2-dev -y
+
+    # Compile ffmpeg (since it is required for libavcodec and libavfilter)
+    - name: Compile ffmpeg
+      run: |
+        cd $GITHUB_WORKSPACE/ffmpeg-4.2.3
+        ./configure \
+        --enable-shared \
+        --enable-gpl \
+        --enable-nonfree \
+        --extra-cflags='-g -O2 -fstack-protector-strong -Wformat -Werror=format-security ' \
+        --extra-ldflags='-Wl,-z,relro'
+        make
+        export LD_LIBRARY_PATH=/usr/local/lib
+        export LIBRARY_PATH=/usr/local/lib
+        export C_INCLUDE_PATH=/usr/local/include
 
     - name: Compile dynamic module
       run: |
         cd $GITHUB_WORKSPACE/nginx-${{ matrix.nginx_version }}
-        ./configure --with-compat --add-dynamic-module=$GITHUB_WORKSPACE/nginx-vod-module
+        ./configure --with-compat --add-dynamic-module=$GITHUB_WORKSPACE/nginx-vod-module-1.26/ \
+        --with-pcre=$GITHUB_WORKSPACE/pcre-8.44 \
+        --with-zlib=$GITHUB_WORKSPACE/zlib-1.2.11
         make modules
 
     - name: Upload a Build Artifact
