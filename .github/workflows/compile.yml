@@ -94,6 +94,7 @@ jobs:
         key: zlib-${{ env.zlib_version }}
   
     - name: Download zlib
+      if: steps.cache-zlib.outputs.cache-hit != 'true'
       run: |
         cd ${{ github.workspace }}
         wget https://www.zlib.net/zlib-${{ env.zlib_version }}.tar.gz
@@ -101,10 +102,47 @@ jobs:
         
     # Grab prebuilts from apt
     - name: Install dependencies with apt
-      run: sudo apt-get install gcc make yasm pkg-config libxml2-dev -y
+      run: |
+        sudo apt-get -y install \
+        gcc make yasm pkg-config libxml2-dev \
+        autoconf \
+        automake \
+        build-essential \
+        cmake \
+        libass-dev \
+        libfreetype6-dev \
+        libgnutls28-dev \
+        libsdl2-dev \
+        libtool \
+        libva-dev \
+        libvdpau-dev \
+        libvorbis-dev \
+        libxcb1-dev \
+        libxcb-shm0-dev \
+        libxcb-xfixes0-dev \
+        pkg-config \
+        texinfo \
+        wget \
+        yasm \
+        zlib1g-dev \
+        nasm \
+        libopus-dev \
+        libmp3lame-dev \
+        libfdk-aac-dev \
+        libvpx-dev \
+        libnuma-dev
+
+    # Grab pcre module
+    - name: Grab ffmpeg-${{ env.ffmpeg_version }} cache
+      uses: actions/cache@v2
+      id: cache-ffmpeg
+      with:
+        path: ffmpeg-build-${{ env.ffmpeg_version }}
+        key: ffmpeg-build-${{ env.ffmpeg_version }}
 
     # Compile ffmpeg (since it is required for libavcodec and libavfilter)
     - name: Compile ffmpeg
+      if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
       run: |
         cd ${{ github.workspace }}/ffmpeg-${{ env.ffmpeg_version }}
         ./configure \
@@ -112,7 +150,12 @@ jobs:
         --enable-gpl \
         --enable-nonfree \
         --extra-cflags='-g -O2 -fstack-protector-strong -Wformat -Werror=format-security ' \
-        --extra-ldflags='-Wl,-z,relro'
+        --extra-ldflags='-Wl,-z,relro' \
+        --incdir=${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/inc \
+        --libdir=${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/lib \
+        --bindir=${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/bin \
+        --shlibdir=${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/shlib \
+        --target-path=${{ github.workspace }}/ffmpeg-build-${{ env.ffmpeg_version }}/bin \
         make
         export LD_LIBRARY_PATH=/usr/local/lib
         export LIBRARY_PATH=/usr/local/lib
