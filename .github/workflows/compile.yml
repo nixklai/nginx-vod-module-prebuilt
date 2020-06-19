@@ -20,12 +20,10 @@ jobs:
       matrix:
         nginx_version: ['1.18.0', '1.19.0']
         # The type of runner that the job will run on
-        os: [ubuntu-18.04git, ubuntu-16.04]
+        os: [ubuntu-18.04, ubuntu-16.04]
    
-
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-
     # Grab ffmpeg source, from cache if possible, or from web
     - name: Grab ffmpeg-${{ env.ffmpeg_version }} cache
       uses: actions/cache@v2
