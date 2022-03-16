@@ -13,9 +13,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       module_version: 1.29
-      pcre_version: 8.44
-      zlib_version: 1.2.11
-      openssl_version: 1.1.1n
+      # pcre_version: 8.44
+      # zlib_version: 1.2.11
+      # openssl_version: 1.1.1n
     strategy:
       matrix:
         # Only support the lastest stable version, and two legacy versions.
@@ -67,33 +67,34 @@ jobs:
     #     wget https://ftp.pcre.org/pub/pcre/pcre-${{ env.pcre_version }}.tar.gz
     #     tar -xzvf pcre-${{ env.pcre_version }}.tar.gz
 
-    # Grab openssl module
-    - name: Grab openssl-${{ env.openssl_version }} cache
-      uses: actions/cache@v2
-      id: cache-openssl
-      with:
-        path: openssl-${{ env.openssl_version }}
-        key: openssl-${{ env.openssl_version }}
-    - name: Download openssl
-      if: steps.cache-openssl.outputs.cache-hit != 'true'
-      run: |
-        cd ${{ github.workspace }}
-        wget https://www.openssl.org/source/openssl-${{ env.openssl_version }}.tar.gz
-        tar -xzvf openssl-${{ env.openssl_version }}.tar.gz
+    # # Grab openssl module
+    # - name: Grab openssl-${{ env.openssl_version }} cache
+    #   uses: actions/cache@v2
+    #   id: cache-openssl
+    #   with:
+    #     path: openssl-${{ env.openssl_version }}
+    #     key: openssl-${{ env.openssl_version }}
+    # - name: Download openssl
+    #   if: steps.cache-openssl.outputs.cache-hit != 'true'
+    #   run: |
+    #     cd ${{ github.workspace }}
+    #     wget https://www.openssl.org/source/openssl-${{ env.openssl_version }}.tar.gz
+    #     tar -xzvf openssl-${{ env.openssl_version }}.tar.gz
 
-    # Grab zlib module   
-    - name: Grab zlib-${{ env.zlib_version }} cache
-      uses: actions/cache@v2
-      id: cache-zlib
-      with:
-        path: zlib-${{ env.zlib_version }}
-        key: zlib-${{ env.zlib_version }}
-    - name: Download zlib
-      if: steps.cache-zlib.outputs.cache-hit != 'true'
-      run: |
-        cd ${{ github.workspace }}
-        wget https://www.zlib.net/zlib-${{ env.openssl_version }}.tar.gz
-        tar -xzvf openssl-${{ env.openssl_version }}.tar.gz
+    # # Grab zlib module   
+    # - name: Grab zlib-${{ env.zlib_version }} cache
+    #   uses: actions/cache@v2
+    #   id: cache-zlib
+    #   with:
+    #     path: zlib-${{ env.zlib_version }}
+    #     key: zlib-${{ env.zlib_version }}
+    # - name: Download zlib
+    #   if: steps.cache-zlib.outputs.cache-hit != 'true'
+    #   run: |
+    #     cd ${{ github.workspace }}
+    #          https://www.zlib.net/zlib-1.2.11.tar.gz
+    #     wget https://www.zlib.net/zlib-${{ env.zlib_version }}.tar.gz
+    #     tar -xzvf openssl-${{ env.zlib_version }}.tar.gz
 
     # Grab prebuilts from apt
     - name: Install dependencies with apt
